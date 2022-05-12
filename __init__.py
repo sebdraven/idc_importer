@@ -74,12 +74,6 @@ def importIDC(file, binaryView):
 				endAddr 	= getBetween(line, "0X", ")")
 				virtualAddr = int("0x" + startAddr, 16)
 
-				# If the function hasn't already been defined by binja, we'll define it
-				functionsAtAddr = binaryView.get_functions_containing(virtualAddr)
-
-				if not functionsAtAddr:
-					binaryView.create_user_function(virtualAddr)
-
 				# Sometimes IDA tab aligns the end address for some reason, so we'll split by the comma and strip the tab + "0X" prefix
 				endAddr = endAddr.split(",")[1]
 				endAddr = endAddr.replace("\t", "")
@@ -125,14 +119,14 @@ def importIDC(file, binaryView):
 	for func in functionList:
 		virtualAddr = int("0x" + functionList[func].start, 16)
 		funcName 	= functionList[func].name
-
-		binaryView.define_user_symbol(Symbol(SymbolType.FunctionSymbol, virtualAddr, funcName))
+		if funcName:
+			binaryView.define_user_symbol(Symbol(SymbolType.FunctionSymbol, virtualAddr, funcName))
 
 	for string in stringDefList:
 		virtualAddr = int("0x" + stringDefList[string].start, 16)
 		stringName  = stringDefList[string].name
-
-		binaryView.define_user_symbol(Symbol(SymbolType.DataSymbol, virtualAddr, stringName))
+		if stringName:
+			binaryView.define_user_symbol(Symbol(SymbolType.DataSymbol, virtualAddr, stringName))
 
 	for cmt in commentList:
 		virtualAddr = int("0x" + commentList[cmt].start, 16)
